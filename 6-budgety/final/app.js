@@ -300,7 +300,9 @@ var UIController = (function() {
         displayPercentages: function(percentages) {
             
             var fields = document.querySelectorAll(DOMstrings.expensesPercLabel);
-            
+
+            console.log(fields);
+
             nodeListForEach(fields, function(current, index) {
                 
                 if (percentages[index] > 0) {
