@@ -1,17 +1,49 @@
-import axios from 'axios';
-// API Key: a3edb4bbf6b6ef169d9d361ca3530bb8
-// API URL: http://food2fork.com/api/search
+import Search from './models/Search';
+import * as searchView from './views/searchView';
+import {elements, renderLoader, clearLoader} from './views/base';
 
-async function getResults(query) {
-    const proxy = 'https://cors-anywhere.herokuapp.com/';
-    const key = 'a3edb4bbf6b6ef169d9d361ca3530bb8';
-    try {
-        const res = await axios(`${proxy}http://food2fork.com/api/search?key=${key}&q=${query}`);
-        const recipes = res.data.recipes;
-        console.log(recipes);
-    } catch (e) {
-        alert(e);
+/**
+ * Current recipe object
+ * Shopping list object
+ * Liked recipe
+ * Search object
+ * @type {{}}
+ */
+const state = {};
+
+const controlSearch = async () => {
+    // Get query from view
+    const query = searchView.getInput();
+    console.log(query);
+    if (query) {
+        // New search object and add to state
+        state.search = new Search(query);
+
+        // Prepare UI for results
+        searchView.clearInput();
+        searchView.clearResults();
+        renderLoader(elements.searchRes);
+
+        // Search for recipes
+        await state.search.getResults();
+
+        // Render results on UI
+        clearLoader();
+        searchView.renderResults(state.search.result);
     }
-}
+};
 
-getResults('tomato pasta}}');
+elements.searchForm.addEventListener('submit', e => {
+    e.preventDefault();
+    controlSearch();
+});
+
+elements.searchResPages.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-inline');
+    if (btn) {
+        const goToPage = parseInt(btn.dataset.goto, 10);
+        searchView.clearResults();
+        searchView.renderResults(state.search.result, goToPage);
+        console.log(goToPage);
+    }
+});
